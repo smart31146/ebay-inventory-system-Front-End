@@ -1,0 +1,69 @@
+.container {
+    max-width: 1000px;
+    width: 90%;
+    margin: auto;
+    margin-top: 30px;
+}
+
+.row {
+    margin-bottom: 10px;
+    border-bottom: 1px solid #cecece;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+}
+
+.row:last-child {
+    justify-content: flex-end;
+    border: none;
+}
+
+.label {
+    width: 100px;
+}
+
+.input {
+    width: calc(100% - 100px);
+}
+
+.input input {
+    width: 100%;
+    border: 1px solid #555555;
+    outline: none;
+}
+
+.row:last-child button {
+    width: 120px;
+    height: 48px;
+    background: #00dbde;
+    border: none;
+    color: white;
+}
+
+.row:last-child span {
+    display: none;
+}
+
+.row:last-child span svg {
+    margin-right: 10px;
+}
+
+.row:last-child span.register, .row:last-child span.update {
+    display: block;
+}
+
+/* Add EbayInfo Modal */
+.ebayinfo {
+    padding: 40px 20px;
+    text-align: center;
+}
+
+.ebayinfo button {
+    width: 100px;
+    height: 48px;
+    background: #00dbde;
+    color: white;
+    border: none;
+    margin-top: 20px;
+}
