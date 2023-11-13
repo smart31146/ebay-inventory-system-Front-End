@@ -1,0 +1,75 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+.container {
+  width: 100%;
+}
+
+input {
+  outline: none;
+  font-size: 16px;
+  padding: 10px;
+  transition: 0.2s;
+}
+
+textarea {
+  resize: none;
+  outline: none;
+  font-size: 16px;
+  padding: 10px;
+  transition: 0.2s;
+}
+
+select {
+  outline: none;
+  padding: 10px;
+}
+
+/* Pagnination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.pagination select {
+  height: 41px;
+  margin-right: 50px;
+  border: 1px solid #00dbde;
+}
+
+.rc-pagination {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+
+.rc-pagination li {
+  color: #00dbde;
+  border: 1px solid #00dbde;
+  padding: 8px 10px;
+  margin-right: 5px;
+  line-height: 1.5;
+  font-size: 14px;
+}
+
+.rc-pagination li:hover,
+.rc-pagination li.rc-pagination-item-active {
+  color: white;
+  background-color: #00dbde;
+  cursor: pointer;
+}
+
+@media screen and (max-width: 1280px) {
+  .container {
+    width: 90%;
+    margin: auto;
+  }
+}

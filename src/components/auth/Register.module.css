@@ -1,0 +1,130 @@
+.container_wrapper {
+    position: relative;
+    min-height: 100vh;
+    background: url(../../../public/bg-01.jpg);
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+}
+
+.container {
+    position: absolute;
+    max-width: 500px;
+    background: white;
+    text-align: center;
+    padding: 60px 30px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -55%);
+    border-radius: 10px;
+}
+
+input.default {
+    width: 100%;
+    padding: 15px 10px 15px 40px;
+    color: #555555;
+    border: none;
+    font-size: 14px;
+    border-bottom: 2px solid #cecece;
+    transition: 0.2s;
+}
+
+input:focus {
+    border-bottom-color: #555555;
+}
+
+input.warning {
+    border-bottom: 2px solid #ff6e6e;
+}
+
+.row {
+    padding: 0px 10px;
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.row svg {
+    position: absolute;
+    left: 20px;
+    bottom: 18px;
+    color: #555555;
+}
+
+.title {
+    margin-bottom: 40px;
+}
+
+.btn {
+    width: 100%;
+}
+
+.already_register span{
+    margin-right: 10px;
+}
+
+.container_wrapper a {
+    color: #00dbde;
+}
+
+.register_btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(to right, #00dbde, #fc00ff);
+    height: 48px;
+    color: white;
+    font-size: 18px;
+    border: none;
+    border-radius: 24px;
+    outline: none;
+    cursor: pointer;
+    margin-top: 30px;
+}
+
+.loading {
+    cursor: not-allowed;
+}
+
+.loading .register_btn {
+    pointer-events: none;
+}
+
+.dot {
+    display: none;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: white;
+    margin-right: 2px;
+}
+
+.loading .register_btn span {
+    display: none;
+}
+
+.loading .register_btn .dot {
+    display: block;
+}
+
+.dot1 {
+    animation: load 0.6s infinite alternate;
+}
+
+.dot2 {
+    animation: load 0.6s infinite 0.2s alternate;
+}
+
+.dot3 {
+    animation: load 0.6s infinite 0.4s alternate;
+}
+
+@keyframes load {
+    0% {width: 8px; height: 8px;}
+    100% {width: 13px; height: 13px;}
+}
+
+.error {
+    text-align: left;
+    font-size: 14px;
+    color: #ff6e6e;
+}
