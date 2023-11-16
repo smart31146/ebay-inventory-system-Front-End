@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import Papa from "papaparse";
+import { CSVLink } from "react-csv";
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 // import { faDownload } from '@fortawesome/free-solid-svg-icons';
@@ -11,7 +13,8 @@ import endpoints from '../util/apicall';
 import { profitFormula } from "../util/profitFormula";
 import { workerChanged, ebayInfoUpdated, updateInformation } from "../redux/actions/productActions";
 
-export default function Monitor() {
+export default function Monitor() {      
+    const headers = ["日付", "商品名", "EC site", "仕入れ URL", "eBay URL", "利益額 (¥)","利益率%", "仕入価格 (¥)", "フリマ送料(¥)", "仕入合計(¥)", "販売価格 ($)", "輸出送料(¥)", "出品者"];
     const searchRef=useRef()
     const [ecsites, setEcsites] = useState([]);
     const [error, setError] = useState("");
@@ -100,6 +103,9 @@ export default function Monitor() {
         let params = new URLSearchParams({ created_by: current_user, user_id: user.id });
         endpoints.get_products(params).then(res => {
             setProducts(res.data);
+            const temp = res.data.map(item => [item.product_name, item.purchase_price]);
+            console.log("restt", temp)
+
 
         }).catch(error => {
             console.log(error);
@@ -217,7 +223,48 @@ export default function Monitor() {
                 setError(error.response.data);
             })
     }
+    const handleFileSave = async () => {
+        
+        const DATA = [
+            { product: "Widget A", price: 10, quantity: 100 },
+  { product: "Widget B", price: 15, quantity: 75 },
+  { product: "Widget C", price: 20, quantity: 50 },
+          ];
+      
+          // Generate CSV string
+          const csv = Papa.unparse(DATA);
 
+    // Create a Blob containing the CSV data
+    const csvBlob = new Blob([csv], { type: "text/csv" });
+          console.log("download", DATA)
+    // Create a URL for the Blob
+    const csvUrl = URL.createObjectURL(csvBlob);
+
+    // Create an invisible link element to trigger the download
+    const link = document.createElement("a");
+    link.href = csvUrl;
+    link.download = "product_data.csv";
+
+    link.click();
+
+    // Clean up by revoking the URL to release resources
+    URL.revokeObjectURL(csvUrl);
+       
+        // const fileToUpload = e.target.files[0];
+        // const formData = new FormData();
+        // formData.append("csvFile", fileToUpload);
+
+        // if (fileToUpload === null)
+        //     return;
+
+
+        // endpoints.upload_product_file(formData).then(res => {
+        //     setChanged(!changed);
+        // })
+        //     .catch(error => {
+        //         setError(error.response.data);
+        //     })
+    }
     function handleValidate(mode, e) {
         if(mode !== 1) {
             setNotDuplicate(true);
@@ -399,19 +446,21 @@ export default function Monitor() {
             setError('販売価格を入力してください！');
             return;
         }
-        if(product.sell_price_en ==0 || product.purchase_price == 0 || product.shipping == 0) {
+        if(product.sell_price_en ==0 || product.purchase_price == 0 ||  product.shipping == 0) {
             setError('入力されていない値があります!');
             return;
         }
         let p = product;
         p.profit = profitFormula(product.sell_price_en, product.purchase_price, product.prima, product.shipping, settings);
-        
 
         if (product.sell_price_en !== 0)
             p.profit_rate = Number(p.profit / (product.sell_price_en * settings.rate) * 100).toFixed(2);
 
         p.created_by = user.id;
-
+        if(product.product_name =='') {
+            setError('商品名を入力してください！！');
+            return;
+        }
         setProduct(p);
         let info = { product: product, order: '1', ecsite: ecsites[product.ecsite], mode: mode };
 
@@ -679,7 +728,7 @@ export default function Monitor() {
             <div className={user.is_superuser ? 'd-flex flex-wrap mt-4' : 'product-header-2'}>
                 {
                     user.is_superuser && (
-                        <div className="d-flex m-auto col-12 col-lg-8 gap-2">
+                        <div className="d-flex m-auto col-12 col-lg-6 gap-2">
                             <div className="ms-2 col-lg-4">
                                 <select style={{ width: 200, height: 50 }} value={current_user} onChange={changeCurrentUser}>
                                     <option value=''>全体表示</option>
@@ -711,12 +760,21 @@ export default function Monitor() {
                             </button>
                         </div>
                         <div style={{ marginLeft: 10 }}>
-                            <label htmlFor="fileupload" className="btn btn-primary" style={{ height: 50, width: 150, paddingTop: 12 }}>CSV一括登録</label>
+                            <label htmlFor="fileupload" className="btn btn-primary" style={{ height: 50, width: 130, paddingTop: 12 }}>CSV一括登録</label>
                             <input id="fileupload" type="file" name="file" style={{ display: 'none' }} accept=".xlsx" onChange={handleFileUpload} />
                         </div>
                         <div style={{ marginLeft: 10 }}>
-                            <button type="button" className="btn btn-primary" data-bs-toggle="modal" data-bs-target="#registerDialog" style={{ width: 150, height: 50 }}>登録</button>
+                            <button type="button" className="btn btn-primary" data-bs-toggle="modal" data-bs-target="#registerDialog" style={{ width: 130, height: 50 }}>登録</button>
                         </div>
+                        <div style={{ marginLeft: 10 }}>
+                       <CSVLink className="btn btn-primary" style={{ height: 50, width: 130, paddingTop: 12 }} data={products.map(item => [item.created_at, item.product_name, item.ec_site, item.purchase_url, item.ebay_url, (parseFloat(item.profit,10)).toLocaleString(), item.profit_rate+"%", (parseFloat(item.purchase_price,10)).toLocaleString(), (parseFloat(item.prima,10)).toLocaleString(), (parseFloat(item.purchase_price + item.prima,10)).toLocaleString(), (parseFloat(item.sell_price_en,10)).toLocaleString()+"$", (parseFloat(item.shipping,10)).toLocaleString(), item.created_by__username])} headers={headers} filename={"eBay_data.csv"}>
+                            CSV出力
+                        </CSVLink>
+                            {/* <label htmlFor="fileSave" className="btn btn-primary" style={{ height: 50, width: 130, paddingTop: 12 }}>Export to CSV</label> */}
+                            
+                            
+                        </div>
+                        
                     </div>
                 </div>
             </div>
