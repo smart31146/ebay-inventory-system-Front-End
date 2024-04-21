@@ -104,7 +104,7 @@ export default function Monitor() {
         endpoints.get_products(params).then(res => {
             setProducts(res.data);
             const temp = res.data.map(item => [item.product_name, item.purchase_price]);
-            console.log("restt", temp)
+            // console.log("restt", temp)
 
 
         }).catch(error => {
@@ -131,13 +131,13 @@ export default function Monitor() {
             // const userInput = "1,900.5";
             updated_value = updated_value.replace(/,/, "");
 
-            console.log("ch",updated_value); // Output: 1900.5
+            // console.log("ch",updated_value); // Output: 1900.5
         }
         if (updated_value.search('.')!==-1) {
             // const userInput = "1,900.5";
             // updated_value = updated_value+'0';
 
-            console.log("ch",updated_value); // Output: 1900.5
+            // console.log("ch",updated_value); // Output: 1900.5
         }
         const productValue = { ...product, [target.name]: updated_value }
 
@@ -154,7 +154,7 @@ export default function Monitor() {
     }
 
     function changeCurrentUser(e) {
-        console.log("test user", e.target.value)
+        // console.log("test user", e.target.value)
         setCurrentUser(e.target.value);
     }
 
@@ -192,13 +192,13 @@ export default function Monitor() {
             })
     }
 
-    function migrate_product(pid, e) {
+    function migrate_product(pid, created_by__username, e) {
        
         if (!window.confirm('本当に資料を注文リストにに移動しますか？')) {
             return;
         }
-
-        endpoints.migrate_item({ id: pid }).then(res => {
+        // console.log("tets user", created_by__username)
+        endpoints.migrate_item({ id: pid, user: created_by__username }).then(res => {
             console.log("successful")
         })
             .catch(error => {
@@ -302,11 +302,14 @@ export default function Monitor() {
             setError('警告！ 仕入れ URLは入力できません');
             return;
         }
-        if(site==='mercari' && purchase.slice(purchase.lastIndexOf('/') + 1).length !== 12) {
-            setError('警告！ 仕入れ URLは入力できません');
-            return;
+        if(site==='mercari') {
+            if(purchase.slice(purchase.lastIndexOf('/') + 1).length !== 12) {
+                if(purchase.slice(purchase.lastIndexOf('/') + 1).length !== 10) {
+                    setError('警告！ 仕入れ URLは入力できません');
+                    return;
+                }
+            }
         }
-        
         if (site!=='other' && product.purchase_url.search(site) === -1) {
             setError('警告！ フォーマットの異なるURLを入力しました。');
             return;
@@ -402,9 +405,17 @@ export default function Monitor() {
             setError('警告！ 仕入れ URLは入力できません');
             return;
         }
-        if(site==='mercari' && purchase.slice(purchase.lastIndexOf('/') + 1).length !== 12) {
-            setError('警告！ 仕入れ URLは入力できません');
-            return;
+        // if(site==='mercari' && purchase.slice(purchase.lastIndexOf('/') + 1).length !== 12) {
+        //     setError('警告！ 仕入れ URLは入力できません');
+        //     return;
+        // }
+        if(site==='mercari') {
+            if(purchase.slice(purchase.lastIndexOf('/') + 1).length !== 12) {
+                if(purchase.slice(purchase.lastIndexOf('/') + 1).length !== 10) {
+                    setError('警告！ 仕入れ URLは入力できません');
+                    return;
+                }
+            }
         }
         if(site==='auctions' && purchase.slice(purchase.lastIndexOf('/') + 1).length < 11 && purchase.slice(purchase.lastIndexOf('/') + 1).length>12) {
             setError('警告！ 仕入れ URLは入力できません');
@@ -778,9 +789,14 @@ export default function Monitor() {
                     </div>
                 </div>
             </div>
+           
             <div style={{ width: '100%', padding: 0, margin: '15px 0 0 0' }}>
                 <table style={{ width: '100%' }}>
                     <thead>
+                        <tr>
+                            <th>登録された件数</th>
+                            <th>{products?.length}件</th>
+                        </tr>
                         <tr>
                             <th style={{ textAlign: 'center' }}>
                                 No
@@ -887,7 +903,7 @@ export default function Monitor() {
                                     <button type="button" className="btn btn-primary" onClick={() => edit_product(index)} data-bs-toggle="modal" data-bs-target="#editDialog" style={{ width: 70, height: 50 }}>編集</button>
                                 </td>
                                 {user.is_superuser && (<td>
-                                    <button type="button" className="btn btn-primary" onClick={(e) => migrate_product(item.id, e)} style={{ width: 70, height: 50 }}>P/O</button>
+                                    <button type="button" className="btn btn-primary" onClick={(e) => migrate_product(item.id, item.created_by__username, e)} style={{ width: 70, height: 50 }}>P/O</button>
                                 </td>)}
                                 <td>
                                     <button type="button" className="btn btn-danger" onClick={(e) => delete_product(item.id, e)} style={{ width: 70, height: 50 }}>削除</button>

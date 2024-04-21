@@ -21,13 +21,13 @@ export default function DeleteList() {
         setError('');
     }, [error])
 
-    function migrate_product(pid, e) {
-        
+    function migrate_product(pid, created_by__username, e) {
+        // console.log("testuser",created_by__username)
         if (!window.confirm('本当に資料を注文リストにに移動しますか？')) {
             return;
         }
 
-        endpoints.migrate_del_item({ id: pid }).then(res => {
+        endpoints.migrate_del_item({ id: pid, user: created_by__username }).then(res => {
             window.alert(res.data)
             console.log("successful")
         })
@@ -151,7 +151,7 @@ export default function DeleteList() {
                                     <button type="button" className="btn btn-primary" onClick={() => edit_product(index)} data-bs-toggle="modal" data-bs-target="#editDialog" style={{ width: 70, height: 50 }}>編集</button>
                                 </td> */}
                                 <td>
-                                    <button type="button" className="btn btn-primary" onClick={(e) => migrate_product(item.id, e)} style={{ width: 70, height: 50 }}>P/O</button>
+                                    <button type="button" className="btn btn-primary" onClick={(e) => migrate_product(item.id, item.created_by__username, e)} style={{ width: 70, height: 50 }}>P/O</button>
                                 </td>
                                 {/* <td>
                                     <button type="button" className="btn btn-danger" style={{ width: 70, height: 50 }}>削除</button>

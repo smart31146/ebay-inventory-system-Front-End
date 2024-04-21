@@ -83,7 +83,7 @@ export default function ProductOrder() {
 
     useEffect(() => {
         endpoints.get_orders().then(response => {
-            
+            console.log(response.data)
             setOrders(response.data);
             // const p = profitFormula(order.sell_price_en, order.purchase_price, order.prima, order.shipping, settings);
             // setProfit(p)
@@ -95,8 +95,29 @@ export default function ProductOrder() {
 
     const update = e => {
         const target = e.currentTarget;
-        const orderValue = { ...order, [target.name]: target.value }
-        console.log("test change", target.name, target.value)
+        let updated_value = target.value;
+        if (target.value==='') {
+            console.log("test error", updated_value)
+            updated_value='0'}
+        if (updated_value.search(',')!==-1) {
+            // const userInput = "1,900.5";
+            updated_value = updated_value.replace(/,/, "");
+
+            // console.log("ch",updated_value); // Output: 1900.5
+        }
+        if (updated_value.search('.')!==-1) {
+            // const userInput = "1,900.5";
+            // updated_value = updated_value+'0';
+
+            // console.log("ch",updated_value); // Output: 1900.5
+        }
+        const orderValue = { ...order, [target.name]: updated_value }
+
+        setOrder({
+            ...orderValue
+        });
+        
+        
         if(target.name == 'created_at') {
             // const inputDate = target.value;
 
@@ -112,10 +133,7 @@ export default function ProductOrder() {
             setFormattedDate(target.value)
         }
         
-        setOrder({
-            ...orderValue
-        });
-
+       
         let p = 0, rate = 0;
         p = profitOrderFormula(orderValue.sell_price_en, orderValue.purchase_price, orderValue.prima, orderValue.shipping, settings);
         rate = Number(p / (orderValue.sell_price_en * settings.rate) * 100).toFixed(2);
@@ -224,18 +242,23 @@ export default function ProductOrder() {
             setError('警告！ 仕入れ URLは入力できません');
             return;
         }
-        if(site==='mercari' && purchase.slice(purchase.lastIndexOf('/') + 1).length !== 12) {
+        // if(site==='mercari' && purchase.slice(purchase.lastIndexOf('/') + 1).length !== 12) {
+        //     setError('警告！ 仕入れ URLは入力できません');
+        //     return;
+        // }
+        if(site==='mercari') {
+            if(purchase.slice(purchase.lastIndexOf('/') + 1).length !== 12) {
+                if(purchase.slice(purchase.lastIndexOf('/') + 1).length !== 10) {
+                    setError('警告！ 仕入れ URLは入力できません');
+                    return;
+                }
+            }
+        }
+        if(site==='auctions' && purchase.slice(purchase.lastIndexOf('/') + 1).length < 11 && purchase.slice(purchase.lastIndexOf('/') + 1).length>12) {
             setError('警告！ 仕入れ URLは入力できません');
             return;
         }
-        if(site==='auctions' && purchase.slice(purchase.lastIndexOf('/') + 1).length < 11 &&   purchase.slice(purchase.lastIndexOf('/') + 1).length >12) {
-            setError('警告！ 仕入れ URLは入力できません');
-            return;
-        }
-        if(order.product_name =='') {
-            setError('商品名を入力してください！！');
-            return;
-        }
+        
         if (site!=='other' && order.purchase_url.search(site) === -1) {
             setError('警告！ フォーマットの異なるURLを入力しました。');
             return;
@@ -282,10 +305,13 @@ export default function ProductOrder() {
             p.profit_rate = Number(p.profit / (order.sell_price_en * settings.rate) * 100).toFixed(2);
 
         p.created_by = user.id;
-
+        p.ordered_at = order.ordered_at;
         setOrder(p);
         let info = { order: order, mode: mode };
-
+        if(order.product_name =='') {
+            setError('商品名を入力してください！！');
+            return;
+        }
         endpoints.add_order_item(info)
             .then(() => {
                 setChanged(!changed);
@@ -326,7 +352,7 @@ export default function ProductOrder() {
             shipping_sum=shipping_sum+ Number(item.shipping)
             sell_price_en_sum =  sell_price_en_sum + Number(item.sell_price_en)
             profit_rate_sum = profit_rate_sum+ Number(item.profit_rate)
-            console.log("test rate", item.profit_rate)
+            
             counter=index+1
           })
         profit_rate_sum = Number(profit_rate_sum/counter).toFixed(2);
@@ -392,23 +418,32 @@ export default function ProductOrder() {
                                 </div>
                                 <div className="col-lg-4 input-group mb-3">
                                     <span className="input-group-text">購入金額(¥)</span>
-                                    <input type="text" className="form-control" name="purchase_price" value={order.purchase_price} onChange={update} />
+                                    <input type="text" className="form-control" name="purchase_price" value={(String(order.purchase_price)).endsWith('.') === true ?
+                                        `${(parseFloat(order.purchase_price,10)).toLocaleString()}.` : (parseFloat(order.purchase_price,10)).toLocaleString()} onChange={update} />
+                                  
                                 </div>
                                 <div className="col-lg-4 input-group mb-3">
                                     <span className="input-group-text">販売価格($)</span>
-                                    <input type="text" className="form-control" name="sell_price_en" value={order.sell_price_en} onChange={update} />
+                                    <input type="text" className="form-control" name="sell_price_en" value={(String(order.sell_price_en)).endsWith('.') === true ?
+                                        `${(parseFloat(order.sell_price_en,10)).toLocaleString()}.` : (parseFloat(order.sell_price_en,10)).toLocaleString()} onChange={update} placeholder="$" />
                                 </div>
                                 <div className="col-lg-4 input-group mb-3">
                                     <span className="input-group-text">フリマ送料(¥)</span>
-                                    <input type="text" className="form-control" name="prima" value={order.prima} onChange={update} />
+                                    <input type="text" className="form-control" name="prima" defaultValue={0} value={(String(order.prima)).endsWith('.') === true ?
+                                        `${(parseFloat(order.prima,10)).toLocaleString()}.` : (parseFloat(order.prima,10)).toLocaleString()} onChange={update} />
+                                    
                                 </div>
                                 <div className="col-lg-4 input-group mb-3">
                                     <span className="input-group-text">輸出送料(¥)</span>
-                                    <input type="text" className="form-control" name="shipping" value={order.shipping} onChange={update} />
+                                    <input type="text" className="form-control" name="shipping" value={(String(order.shipping)).endsWith('.') === true ?
+                                        `${(parseFloat(order.shipping,10)).toLocaleString()}.` : (parseFloat(order.shipping,10)).toLocaleString()} onChange={update} />
+                                    
                                 </div>
                                 <div className="col-lg-4 input-group mb-3">
                                     <span className="input-group-text">利益額(¥)</span>
-                                    <input type="text" className="form-control" value={profit} onChange={update} placeholder="" readOnly />
+                                    <input type="text" className="form-control" value={(String(profit)).endsWith('.') === true ?
+                                        `${(parseFloat(profit,10)).toLocaleString()}.` : (parseFloat(profit,10)).toLocaleString()} onChange={update} placeholder="" readonly />
+                                    
                                 </div>
                                 <div className="col-lg-4 input-group mb-3">
                                     <span className="input-group-text">利益率(%)</span>
@@ -475,19 +510,27 @@ export default function ProductOrder() {
                                 </div>
                                 <div className="col-lg-4 input-group mb-3">
                                     <span className="input-group-text">購入金額(¥)</span>
-                                    <input type="text" className="form-control" name="purchase_price" value={order.purchase_price} onChange={update} />
+                                    <input type="text" className="form-control" name="purchase_price" value={(String(order.purchase_price)).endsWith('.') === true ?
+                                        `${(parseFloat(order.purchase_price,10)).toLocaleString()}.` : (parseFloat(order.purchase_price,10)).toLocaleString()} onChange={update} />
+                                    
                                 </div>
                                 <div className="col-lg-4 input-group mb-3">
                                     <span className="input-group-text">ペイメント($)</span>
-                                    <input type="text" className="form-control" name="sell_price_en" value={order.sell_price_en} onChange={update} />
+                                    <input type="text" className="form-control" name="sell_price_en" value={(String(order.sell_price_en)).endsWith('.') === true ?
+                                        `${(parseFloat(order.sell_price_en,10)).toLocaleString()}.` : (parseFloat(order.sell_price_en,10)).toLocaleString()} onChange={update} placeholder="$" />
+                                    
                                 </div>
                                 <div className="col-lg-4 input-group mb-3">
                                     <span className="input-group-text">フリマ送料(¥)</span>
-                                    <input type="text" className="form-control" name="prima" value={order.prima} onChange={update} />
+                                    <input type="text" className="form-control" name="prima" defaultValue={0} value={(String(order.prima)).endsWith('.') === true ?
+                                        `${(parseFloat(order.prima,10)).toLocaleString()}.` : (parseFloat(order.prima,10)).toLocaleString()} onChange={update} />
+                                    
                                 </div>
                                 <div className="col-lg-4 input-group mb-3">
                                     <span className="input-group-text">輸出送料(¥)</span>
-                                    <input type="text" className="form-control" name="shipping" value={order.shipping} onChange={update} />
+                                    <input type="text" className="form-control" name="shipping" value={(String(order.shipping)).endsWith('.') === true ?
+                                        `${(parseFloat(order.shipping,10)).toLocaleString()}.` : (parseFloat(order.shipping,10)).toLocaleString()} onChange={update} />
+                                    
                                 </div>
                                 <div className="col-lg-4 input-group mb-3">
                                     <span className="input-group-text">利益額(¥)</span>
@@ -495,11 +538,18 @@ export default function ProductOrder() {
                                 </div>
                                 <div className="col-lg-4 input-group mb-3">
                                     <span className="input-group-text">利益率(%)</span>
-                                    <input type="text" className="form-control" value={profit_rate} onChange={update} placeholder="" readOnly />
+                                    <input type="text" className="form-control" value={(String(profit)).endsWith('.') === true ?
+                                        `${(parseFloat(profit,10)).toLocaleString()}.` : (parseFloat(profit,10)).toLocaleString()} onChange={update} placeholder="" readonly />
+                                    
+                                </div>
+                                <div className="col-lg-4 input-group mb-3">
+                                    <span className="input-group-text">出品者</span>
+                                    <input type="text" className="form-control" name="ordered_at" value={order.ordered_at} onChange={update} />
                                 </div>
                                 <div className="col-lg-4 input-group mb-3">
                                     <label>備考</label>
                                 </div>
+
                                 <div className="col-lg-4 input-group mb-3">
                                     <textarea className="form-control" name="notes" value={order.notes} onChange={update} />
                                 </div>
@@ -674,7 +724,7 @@ export default function ProductOrder() {
                                     {item.ebay_url}
                                 </td>
                                 <td className={item.profit < 1000 ? 'warning' : ''}>
-                                    {item.profit}
+                                {(parseFloat(item.profit,10)).toLocaleString()}
                                 </td>
                                 <td className={item.profit_rate < 10 ? 'warning' : ''}>
                                     {
@@ -682,22 +732,22 @@ export default function ProductOrder() {
                                     } %
                                 </td>
                                 <td>
-                                    {item.purchase_price}
+                                {(parseFloat(item.purchase_price,10)).toLocaleString()}
                                 </td>
                                 <td>
-                                    {item.prima}
+                                {(parseFloat(item.prima,10)).toLocaleString()}
                                 </td>
                                 <td>
-                                    {item.purchase_price + item.prima}
+                                {(parseFloat(item.purchase_price + item.prima,10)).toLocaleString()}
                                 </td>
                                 <td>
-                                    {item.sell_price_en} $
+                                {(parseFloat(item.sell_price_en,10)).toLocaleString()} $
                                 </td>
                                 <td>
-                                    {item.shipping}
+                                {(parseFloat(item.shipping,10)).toLocaleString()}
                                 </td>
                                 <td>
-                                    {item.created_by__username}
+                                    {item.ordered_at}
                                 </td>
                                 <td>
                                     {item.notes}
