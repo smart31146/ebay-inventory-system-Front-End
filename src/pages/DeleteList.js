@@ -35,6 +35,21 @@ export default function DeleteList() {
                 setError(error.response.data);
             })
     }
+
+    function recover_product(pid, created_by__username, e) {
+        // console.log("testuser",created_by__username)
+        if (!window.confirm('本当に商品を再登録しますか？')) {
+            return;
+        }
+
+        endpoints.recover_item({ id: pid, user: created_by__username }).then(res => {
+            // window.alert(res.data)
+            console.log("successful")
+        })
+            .catch(error => {
+                setError(error.response.data);
+            })
+    }
     return (
         <div className="container-fluid">
             <div style={{ width: '100%', padding: 0, margin: '15px 0 0 0' }}>
@@ -152,6 +167,9 @@ export default function DeleteList() {
                                 </td> */}
                                 <td>
                                     <button type="button" className="btn btn-primary" onClick={(e) => migrate_product(item.id, item.created_by__username, e)} style={{ width: 70, height: 50 }}>P/O</button>
+                                </td>
+                                <td>
+                                    <button type="button" className="btn btn-primary" onClick={(e) => recover_product(item.id, item.created_by__username, e)} style={{ width: 70, height: 50 }}>D/M</button>
                                 </td>
                                 {/* <td>
                                     <button type="button" className="btn btn-danger" style={{ width: 70, height: 50 }}>削除</button>

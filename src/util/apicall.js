@@ -96,6 +96,8 @@ const endpoints = {
     migrate_item: (item) => api.post('product/migrate_product/', item),
     //Migrate del_product into order list
     migrate_del_item: (item) => api.post('product/migrate_del_item/', item),
+    //recover del_product into mornitor list
+    recover_item: (item) => api.post('product/recover_del_item/', item),
     // Add ordered product
     add_order_item: (item) => api.post('product/add_order_item/', item),
 
