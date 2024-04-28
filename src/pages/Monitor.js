@@ -20,7 +20,7 @@ export default function Monitor() {
     const [error, setError] = useState("");
     const [notDuplicate, setNotDuplicate] = useState(true);
     const [products, setProducts] = useState([]);
-
+    const [sumPrice, setSumPrice] = useState(0);
     // const [loading, setLoading] = useState(false);
     const [users, setUsers] = useState([]);
     const [changed, setChanged] = useState(false);
@@ -113,6 +113,17 @@ export default function Monitor() {
 
     }, [current_user, changed, settings]);
 
+    useEffect(()=> {
+        try{
+            const totalPrice = products.reduce((accumulator, product) => {
+                return parseFloat(accumulator ,10)+parseFloat(product.sell_price_en,10);
+              }, 0); 
+            setSumPrice(totalPrice)        
+        } catch(error) {
+            console.log(error)
+        }
+       
+    }, [products])
     useEffect(() => {
         if (error !== "") {
             window.alert(error);
@@ -199,6 +210,7 @@ export default function Monitor() {
         }
         // console.log("tets user", created_by__username)
         endpoints.migrate_item({ id: pid, user: created_by__username }).then(res => {
+            setChanged(!changed);
             console.log("successful")
         })
             .catch(error => {
@@ -796,7 +808,10 @@ export default function Monitor() {
                         <tr>
                             <th>登録された件数</th>
                             <th>{products?.length}件</th>
+                            <th>販売総額</th>
+                            <th>{sumPrice.toLocaleString()}$</th>
                         </tr>
+                     
                         <tr>
                             <th style={{ textAlign: 'center' }}>
                                 No
