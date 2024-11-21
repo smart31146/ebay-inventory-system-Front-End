@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // const APIBASEURL = 'http://localhost:8080/api';
-const APIBASEURL = 'http://160.251.62.82:8080/api';
+const APIBASEURL = 'http://118.27.81.246:8080/api';
 
 
 if (localStorage.getItem('token') !== null) {
@@ -98,6 +98,8 @@ const endpoints = {
     migrate_del_item: (item) => api.post('product/migrate_del_item/', item),
     //recover del_product into mornitor list
     recover_item: (item) => api.post('product/recover_del_item/', item),
+    //set ebay price
+    set_ebay_price: (item) => api.post('product/set_ebay_price/', item),
     // Add ordered product
     add_order_item: (item) => api.post('product/add_order_item/', item),
 
