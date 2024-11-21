@@ -7,6 +7,7 @@ export default function DeleteList() {
 
     useEffect(() => {
         endpoints.get_custom_deleted_products().then(response => {
+            console.log(response.data)
             setDeletedList(response.data);
         }).catch(error => {
             console.log(error);
@@ -28,6 +29,7 @@ export default function DeleteList() {
         }
 
         endpoints.migrate_del_item({ id: pid, user: created_by__username }).then(res => {
+            console.log("dele")
             window.alert(res.data)
             console.log("successful")
         })
@@ -125,10 +127,15 @@ export default function DeleteList() {
                                     {item.ec_site}
                                 </td>
                                 <td>
-                                    {item.purchase_url}
+                                    <a href={item.purchase_url}target="_blank" rel="noopener noreferrer">
+                                        {item.purchase_url}
+                                    </a>
+                                    
                                 </td>
                                 <td>
-                                    {item.ebay_url}
+                                    <a href={item.ebay_url} target="_blank" rel="noopener noreferrer">
+                                        {item.ebay_url}
+                                    </a>
                                 </td>
                                 <td className={item.profit < 1000 ? 'warning' : ''}>
                                     {item.profit}

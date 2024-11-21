@@ -718,10 +718,15 @@ export default function ProductOrder() {
                                     {item.ec_site}
                                 </td>
                                 <td>
-                                    {item.purchase_url}
+                                    <a href={item.purchase_url}target="_blank" rel="noopener noreferrer">
+                                        {item.purchase_url}
+                                    </a>
+                                    
                                 </td>
                                 <td>
-                                    {item.ebay_url}
+                                    <a href={item.ebay_url} target="_blank" rel="noopener noreferrer">
+                                        {item.ebay_url}
+                                    </a>
                                 </td>
                                 <td className={item.profit < 1000 ? 'warning' : ''}>
                                 {(parseFloat(item.profit,10)).toLocaleString()}

@@ -16,6 +16,8 @@ import { workerChanged, ebayInfoUpdated, updateInformation } from "../redux/acti
 export default function Monitor() {      
     const headers = ["日付", "商品名", "EC site", "仕入れ URL", "eBay URL", "利益額 (¥)","利益率%", "仕入価格 (¥)", "フリマ送料(¥)", "仕入合計(¥)", "販売価格 ($)", "輸出送料(¥)", "出品者"];
     const searchRef=useRef()
+    const [loading, setLoading] = useState(false);
+    const [profitSellRate, setProfitSellRate] = useState(0)
     const [ecsites, setEcsites] = useState([]);
     const [error, setError] = useState("");
     const [notDuplicate, setNotDuplicate] = useState(true);
@@ -372,7 +374,55 @@ export default function Monitor() {
                 setError(error.response.data);
             });
     }
+    function set_ebay_price(e) {
+        // console.log("testuser",created_by__username)
+        if (!window.confirm('商品価格を更新しますか？')) {
+            return;
+        }
+        setLoading(true);
+        endpoints.set_ebay_price({ profitSellRate: profitSellRate }).then(res => {
+            window.alert(res.data)
+            console.log("successful")
+            endpoints.getEbayInfo()
+            .then(res => {
+                dispatch(ebayInfoUpdated(res.data));
+            })
+            .catch(err => {
+                console.log(err);
+            })
 
+            endpoints.get_settings_attr().then(res => {
+                dispatch(updateInformation(res.data));
+            })
+                .catch(err => {
+                    console.log(err);
+                });
+
+            })
+            .catch(error => {
+                setError(error.response.data);
+            }).finally(() => {
+                setLoading(false); // End loading
+            });
+    }
+    const Spinner = () => (
+        <div style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "rgba(255, 255, 255, 0.8)",
+            zIndex: 9999
+        }}>
+            <div className="spinner-border" role="status">
+                <span className="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    );
     function handleSubmit(mode) {
 
         if (mode === 1 && notDuplicate === false) {
@@ -748,11 +798,12 @@ export default function Monitor() {
 
     return (
         <div className="container-fluid">
+             {loading && <Spinner />}
             <div className={user.is_superuser ? 'd-flex flex-wrap mt-4' : 'product-header-2'}>
                 {
                     user.is_superuser && (
-                        <div className="d-flex m-auto col-12 col-lg-6 gap-2">
-                            <div className="ms-2 col-lg-4">
+                        <div style={{ display: 'flex', gap: 2, flexDirection: 'row' }}>
+                            <div className="ms-2">
                                 <select style={{ width: 200, height: 50 }} value={current_user} onChange={changeCurrentUser}>
                                     <option value=''>全体表示</option>
                                     {
@@ -761,15 +812,30 @@ export default function Monitor() {
                                 </select>
                             </div>
 
-                            <div className="d-flex mb-3 input-group">
-                                <div className="col-lg-8 col-8 form-outline">
-                                    <input type="search" style={{ height: 50 }} placeholder="商品名、フリマURL、eBay URL" id="form1" ref={searchRef} className="form-control" />
+                            <div className="d-flex mb-3 input-group "  style={{ width: 450 }}>
+                                <div className="form-outline">
+                                    <input type="search" style={{ width: 300, height: 50 }} placeholder="商品名、フリマURL、eBay URL" id="form1" ref={searchRef} className="form-control" />
                                     {/* <label className="form-label" for="form1">Search</label> */}
                                 </div>
                                 <button type="button" className="btn btn-primary" onClick={searchItem}>
                                     <IconSearch />
                                 </button>
                             </div>
+                            {user.is_superuser && (
+                                <div style={{ display: 'flex', justifySelf: "center", gap: 2, flexDirection: 'row', width: 500 }}>
+                                    <p>利益率: </p>
+                                     <input
+                                        type="text"
+                                        id="profitSellRate"
+                                        value={profitSellRate}
+                                        placeholder='利益率'
+                                        onChange={(e) => setProfitSellRate(e.target.value)}
+                                        style={{ height: 50 }}
+                                    />
+                                    <button type="button" className="btn btn-primary" onClick={(e) => set_ebay_price(e)} style={{ width: 70, height: 50 }}>設定</button>
+                                </div>
+                                
+                                )}
                         </div>
                         
                     )
@@ -880,10 +946,15 @@ export default function Monitor() {
                                     {item.ec_site}
                                 </td>
                                 <td>
-                                    {item.purchase_url}
+                                    <a href={item.purchase_url}target="_blank" rel="noopener noreferrer">
+                                        {item.purchase_url}
+                                    </a>
+                                    
                                 </td>
                                 <td>
-                                    {item.ebay_url}
+                                    <a href={item.ebay_url} target="_blank" rel="noopener noreferrer">
+                                        {item.ebay_url}
+                                    </a>
                                 </td>
                                 <td className={item.profit < 1000 ? 'warning' : ''}>
                                     {(parseFloat(item.profit,10)).toLocaleString()}
